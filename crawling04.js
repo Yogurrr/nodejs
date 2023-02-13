@@ -7,28 +7,34 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
 const path = require('path');
+const { XMLParser } = require('fast-xml-parser')
 
 async function main() {
 
     // 접속할 url, 쿼리스트링, 요청헤더 지정
+    // 인증 vs 인가
     const URL = 'http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty'
     const params = {'serviceKey':'VDshietPX1L3q5ss8MYBjpPJgleqfA+6c46knZPaL67KMf6EdpYi/arP6JjXYixNuI3iZ1CEtjg5HU4TfCpXdg==',
-        'returnType':'json', 'sidoName':'서울', 'numOfRows':1000, 'ver':1.3
+        'returnType':'xml', 'sidoName':'서울', 'numOfRows':1000, 'ver':1.3
     };
     const headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0'};
 
     // axios 로 접속해서 대기오염 정보를 불러옴
-    const json = await axios.get(URL, {
+    const xml = await axios.get(URL, {
         params : params,
         headers : headers
     });   // 서버 요청 시 User-Agent 헤더 사용
 
     // 받아온 데이터 잠시 확인
-    // console.log(json.data);
+    // console.log(xml.data);
+
+    // XML을 JSON으로 변환하기
+    const parser = new XMLParser()
+    let json = parser.parse(xml.data);
 
     // JSON 으로 불러오기
-    let items = json.data['response']['body']['items']
-    // console.log(items);
+    let items = json['response']['body']['items']
+    // console.log(items['item']);
 
     // 등급별 이모지
     // 😍 😐 😰 😱
@@ -44,7 +50,7 @@ async function main() {
     }
 
     // 미세먼지 정보 출력
-    for (let item of items) {
+    for (let item of items['item']) {
         console.log(item.sidoName, item.stationName,
             item.pm10Value, item.pm25Value,
             item.pm10Grade, item.pm25Grade,
