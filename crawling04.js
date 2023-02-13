@@ -13,7 +13,7 @@ async function main() {
     // 접속할 url, 쿼리스트링, 요청헤더 지정
     const URL = 'http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty'
     const params = {'serviceKey':'VDshietPX1L3q5ss8MYBjpPJgleqfA+6c46knZPaL67KMf6EdpYi/arP6JjXYixNuI3iZ1CEtjg5HU4TfCpXdg==',
-        'returnType':'json', 'sidoName':'전국', 'numOfRows':1000
+        'returnType':'json', 'sidoName':'서울', 'numOfRows':1000, 'ver':1.3
     };
     const headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0'};
 
@@ -30,10 +30,25 @@ async function main() {
     let items = json.data['response']['body']['items']
     // console.log(items);
 
+    // 등급별 이모지
+    // 😍 😐 😰 😱
+
+    let pmGrade = (val) => {
+        /*let emoji = '😱';
+        if (val === '1') emoji = '😍';
+        else if (val === '2') emoji = '😐';
+        else if (val === '3') emoji = '😰';*/
+        let emojis = ['😍', '😐', '😰', '😱']
+
+        return emojis[parseInt(val) - 1];
+    }
+
     // 미세먼지 정보 출력
-    // pm25Value는 출력 안 됨!!
     for (let item of items) {
-        console.log(item.sidoName, item.stationName, item.pm10Value,
+        console.log(item.sidoName, item.stationName,
+            item.pm10Value, item.pm25Value,
+            item.pm10Grade, item.pm25Grade,
+            pmGrade(item.pm10Value), pmGrade(item.pm25Value),
             item.dataTime);
     }
 }
