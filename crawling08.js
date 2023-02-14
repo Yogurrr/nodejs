@@ -63,15 +63,42 @@ async function main() {
 
         // 검색결과 출력 - 아파트명, 주소
         let apts = await chrome.findElements(By.css('.aptS_rLName'));
-        let aptaddrs = await  chrome.findElements(By.css('.aptS_rLAddr'));
+        let aptaddrs = await chrome.findElements(By.css('.aptS_rLAdd'));
 
-        for (let apt of apts) {
+        for (let apt of apts) {   // 아파트 이름
             console.log(await apt.getAttribute('textContent'));
         }
 
-        for (let addr of aptaddrs) {
+        for (let addr of aptaddrs) {   // 아파트 주소
             console.log(await addr.getAttribute('textContent'));
         }
+        await sleep(1500);
+
+        // 아이파크 삼성동 항목을 찾아 인덱스값 추출
+        let idx = 0;
+        for (let val of apts) {
+            console.log(`${idx++} ${val.getAttribute('textContent')}`);
+            if (await val.getAttribute('textContent') === apt) break;
+        }
+
+        // 추출한 인덱스값을 이용해서 해당 항목 직접 클릭
+        menu = await chrome.findElement(By.css(`.mCSB_container ul li:nth-child(${idx}) a`));
+        await chrome.actions().move({origin: menu}).click().perform();
+
+        // await chrome.executeScript('arguments[0].click();', apts[--idx]);
+        await sleep(1500);
+
+        // -------------------------
+        // 관리시설정보 클릭
+        menu = await chrome.findElement(By.css('.lnbNav > li:nth-child(3) > a:nth-child(1)'));
+        await chrome.actions().move({origin: menu}).click().perform();
+
+        // 지상/지하 주차장 대수 추출
+        let pcnt = await chrome.findElement(By.css('#kaptd_pcnt')).getText();
+        let pcntu = await chrome.findElement(By.css('#kaptd_pcntu')).getText();
+        let tpcnt = await chrome.findElement(By.css('#kaptd_total_pcnt')).getText();
+
+        console.log(`지상 : ${pcnt}, 지하 : ${pcntu}, 총 : ${tpcnt}`);
 
     } catch (ex) {
         console.log(ex)
